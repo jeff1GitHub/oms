@@ -1,0 +1,93 @@
+server.port: 8999
+#view
+spring.mvc.view:
+  prefix: /WEB-INF/views/
+  suffix: .jsp
+
+#mybatis
+#mybatis-plus:
+mybatis-plus:
+  mapper-locations: classpath:/static/mapping/*.xml
+  typeAliasesPackage: com.og.oms.model #实体扫描，多个package用逗号或者分号分隔
+  typeEnumsPackage: com.og.oms.enums
+  configuration:
+      map-underscore-to-camel-case: false
+      cache-enabled: false
+  global-config:
+    id-type: 0 #主键类型  0:"数据库ID自增", 1:"用户输入ID",2:"全局唯一ID (数字类型唯一ID)", 3:"全局唯一ID UUID";
+    field-strategy: 2 #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
+    db-column-underline: true #驼峰下划线转换
+    refresh-mapper: true #刷新mapper 调试神器
+    capital-mode: false #数据库大写下划线转换
+    logic-delete-value: 0 #逻辑删除配置
+    logic-not-delete-value: 1 #逻辑删除配置
+#    meta-object-handler: com.baomidou.springboot.xxx #自定义填充策略接口实现
+#    sql-injector: com.baomidou.springboot.xxx #自定义SQL注入器
+#    key-generator: com.baomidou.springboot.xxx #序列接口实现类配置
+
+
+# jdbc_config
+#spring.datasource:
+#    url: jdbc:p6spy:postgresql://192.168.224.128:5432/omsnew
+##    driver-class-name: org.postgresql.Driver
+#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+#    username: postgres
+#    password: qwe123
+##    type: com.alibaba.druid.pool.DruidDataSource
+
+spring.datasource:
+    #url: jdbc:postgresql://10.21.10.61:5432/postgres
+    url: jdbc:postgresql://103.30.6.150:5432/postgres
+    #url: jdbc:postgresql://14.192.10.75:5432/posystem
+    driver-class-name: org.postgresql.Driver
+    #driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    username: postgres
+    password: 123456
+#    type: com.alibaba.druid.pool.DruidDataSource
+
+
+##log
+#logging:
+#  config: classpath:logback.xml
+#  path: D:\jeff-project\log
+
+
+logging:
+  path: E:\springbootlog 
+  file: E:\springbootlog\demo.log
+#  path: /usr/local/tomcat/output/springbootlog
+#  file: /usr/local/tomcat/output/springbootlog/logs
+ 
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    hibernate: ERROR
+
+
+
+# 设置邮箱主机
+spring.mail:
+  host: smtp.qq.com
+  username: 用户名 # 设置用户名
+  password: 密码 # 设置密码
+# 设置是否需要认证，如果为true,那么用户名和密码就必须的，
+#如果设置false，可以不设置用户名和密码，当然也得看你的对接的平台是否支持无密码进行访问的。
+spring.mail.properties.mail.smtp:
+  auth: true
+# STARTTLS[1]  是对纯文本通信协议的扩展。它提供一种方式将纯文本连接升级为加密连接（TLS或SSL），而不是另外使用一个端口作加密通信。
+  enable: true
+  starttls.required: true
+
+
+# 自定义参数
+spring.email.sender: test@qq.com # 邮件发送者
+
+spring:
+  ldap:
+    password: rt12#5zt!@#
+    username: cn=Manager,dc=cattlee,dc=com
+    urls: ldap://60.251.32.13:389
+    
+#保存路径nas.home/image/yyyyMMdd/
+#如：nas.home: D:/output  实际保存路径  /usr/local/tomcat/output
+nas.home:  /usr/local/tomcat/output

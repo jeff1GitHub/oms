@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.ProducerMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.Producer">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="company_name" property="companyName" />
+		<result column="signature_person" property="signaturePerson" />
+		<result column="ali_pay" property="aliPay" />
+		<result column="bank_type" property="bankType" />
+		<result column="bank_account" property="bankAccount" />
+		<result column="login_domain" property="loginDomain" />
+		<result column="login_account" property="loginAccount" />
+		<result column="login_password" property="loginPassword" />
+		<result column="is_del" property="isDel" />
+		<result column="role" property="role" />
+	</resultMap>
+	
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap2" type="com.og.oms.model.Producer">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="company_name" property="companyName" />
+		<result column="signature_person" property="signaturePerson" />
+		<result column="ali_pay" property="aliPay" />
+		<result column="bank_type" property="bankType" />
+		<result column="bank_account" property="bankAccount" />
+		<result column="login_domain" property="loginDomain" />
+		<result column="login_account" property="loginAccount" />
+		<result column="login_password" property="loginPassword" />
+		<result column="is_del" property="isDel" />
+		<collection property="producerType" ofType="com.og.oms.enums.ProducerTypeEnum">
+			<result column="role_id" property="code"/>
+		</collection>
+	</resultMap>
+	
+	<select id="getRoleMap" resultType="com.og.oms.model.ProducerRolemap">
+		select tpr.id, tpr.producer_id, tpr.role_id from t_producer_rolemap as tpr where tpr.producer_id = #{id}
+	</select>
+	
+	<select id="getProducerById" resultMap="BaseResultMap2">
+		select 
+			tp.id, 
+			tp.name, 
+			tp.company_name, 
+			tp.signature_person, 
+			tp.ali_pay, 
+			tp.bank_type, 
+			tp.bank_account, 
+			tp.login_domain, 
+			tp.login_account, 
+			tp.login_password, 
+			tp.is_del, 
+			tpr.role_id
+		from 
+			t_producer as tp left join t_producer_rolemap as tpr
+			on tp.id = tpr.producer_id
+		where
+      		tp.id = #{id}
+	</select>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, company_name AS companyName, signature_person AS signaturePerson, ali_pay AS aliPay, bank_type AS bankType, bank_account AS bankAccount, login_domain AS loginDomain, login_account AS loginAccount, login_password AS loginPassword, is_del AS isDel, role
+    </sql>
+
+	<select id="getProducerList" resultType="java.util.Map">
+		SELECT
+		"a"."id",
+		"a"."name",
+		"a"."role",
+		"a".company_name as companyname,
+		"a".signature_person as signatureperson,
+		"a".ali_pay as alipay,
+		"a".bank_account as bankaccount,
+		"a".bank_type as banktype,
+		coalesce("b"."name",'') as linkmanname,
+		coalesce("b"."addr",'') as addr,
+		"c"."type",
+		"c".message,
+		coalesce("a".login_domain,'') as logindomain,
+		"a".login_account as loginaccount,
+		"a".login_password as loginpassword
+		from
+		t_producer as a LEFT JOIN t_linkman as b on a.id = b.prodoucer and b.is_default = 1
+		left join t_linkman_information as c ON b.id = c.linkman_id and c.is_default = 1
+		where a.is_del = 0
+	</select>
+
+</mapper>

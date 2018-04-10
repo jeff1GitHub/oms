@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.LinkmanMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.Linkman">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="prodoucer" property="prodoucer" />
+		<result column="is_default" property="isDefault" />
+		<result column="is_del" property="isDel" />
+		<result column="addr" property="addr" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, prodoucer, is_default AS isDefault, is_del AS isDel, addr
+    </sql>
+    
+    <resultMap id="linkmanWithInfoResultMap" type="com.og.oms.model.Linkman">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="prodoucer" property="prodoucer" />
+		<result column="is_default" property="isDefault" />
+		<result column="is_del" property="isDel" />
+		<result column="addr" property="addr" />
+		<collection property="linkmanInformations" ofType="com.og.oms.model.LinkmanInformation">
+			<id column="infoId" property="id" />
+			<result column="linkman_id" property="linkmanId" />
+			<result column="type" property="type" />
+			<result column="message" property="message" />
+			<result column="infoisdefault" property="isDefault" />
+		</collection>
+	</resultMap>
+	
+	<!-- 根据供应商ID获取联系人信息，并获取联系人默认的联系方式 -->
+	<select id="getLinkmanWithDefaulContactInfo" resultType="com.og.oms.model.Linkman">
+		select
+			tl.id,
+			tl.name,
+			tl.prodoucer,
+			tli."type" as "defaultContactType",
+			tli.message "defaultContactInfo",
+			tl.addr
+		from
+			t_linkman as tl
+		left join  t_linkman_information as tli on tl.id = tli.linkman_id
+		and tli.is_default = 1
+		where
+			tl.prodoucer = #{id};
+	</select>
+	
+	<select id="getLinkmanWithInfoById" resultMap="linkmanWithInfoResultMap">
+		select tl.id, tl.name, tl.prodoucer, tl.is_default, tl.is_del, tl.addr, tli.id as info_id,
+			   tli.linkman_id, tli.type, tli.message, tli.is_default as infoisdefault
+		from   t_linkman as tl LEFT JOIN t_linkman_information as tli 
+			   on tl.id = tli.linkman_id 
+		where tl.id = #{id}
+	</select>
+	
+	<update id="updateLinkmanIsNotDefault" parameterType="Integer">
+		update t_linkman set is_default = 0 where prodoucer = #{0}
+	</update>
+
+</mapper>

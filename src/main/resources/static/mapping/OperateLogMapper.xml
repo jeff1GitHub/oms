@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.OperateLogMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.OperateLog">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="user_account" property="userAccount" />
+		<result column="log_type" property="logType" />
+		<result column="context" property="context" />
+		<result column="create_time" property="createTime" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id AS userId, user_account AS userAccount, log_type AS logType, context, create_time AS createTime
+    </sql>
+    
+    <select id="getOperateLogList" parameterType="java.util.Map" resultType="com.og.oms.model.OperateLog">
+    	select 
+    		<include refid="Base_Column_List"></include>
+     	from 
+     		t_operate_log
+     	where 1=1
+   		<if test="account != null and account != ''">
+			and user_account = #{account}
+		</if>
+		<if test="logType != null ">
+			and log_type = #{logType}
+		</if>
+		<if test="startDay != null and startDay != ''">
+			and create_time &gt; #{startDay}::TIMESTAMP
+		</if>
+		<if test="endDay != null and endDay != ''">
+			and create_time &lt; #{endDay}::TIMESTAMP
+		</if>
+    </select>
+
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.PermisMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.Permis">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="url" property="url" />
+		<result column="parent" property="parent" />
+		<result column="index" property="index" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, url, parent, index
+    </sql>
+
+	<select id="getUserPermisList" resultType="com.og.oms.model.Permis" parameterType="java.util.ArrayList">
+		select DISTINCT b.id,  b.name, b.parent, b.url
+		from t_group_permis a left join sys_permis b on a.permis_id=b."id"
+		where 1=1
+		<if test="list!=null and list.size()>0">
+            and group_id in
+            <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            	#{item}
+            </foreach>
+ 		</if>
+		order by b.id
+	</select>
+</mapper>

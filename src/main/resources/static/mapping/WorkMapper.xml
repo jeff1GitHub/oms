@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.WorkMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.Work">
+		<result column="id" property="id" />
+		<result column="status" property="status" />
+		<result column="fault_type" property="faultType" />
+		<result column="priority" property="priority" />
+		<result column="priority_name" property="priorityName" />
+		<result column="customer_id" property="customerId" />
+		<result column="describe" property="describe" />
+		<result column="platform" property="platform" />
+		<result column="station_id" property="stationId" />
+		<result column="station_name" property="stationName" />
+		<result column="alias_name" property="aliasName" />
+		<result column="level" property="level" />
+		<result column="level_name" property="levelName" />
+		<result column="server_id" property="serverId" />
+		<result column="server_room_id" property="serverRoomId" />
+		<result column="domain" property="domain" />
+		<result column="receive_user" property="receiveUser" />
+		<result column="receive_time" property="receiveTime" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="finish_time" property="finishTime" />
+		<result column="finish_type" property="finishType" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, status, fault_type AS faultType, priority, priority_name AS priorityName, customer_id AS customerId, describe, platform, station_id AS stationId, station_name AS stationName, alias_name AS aliasName, level, level_name AS levelName, server_id AS serverId, server_room_id AS serverRoomId, domain, receive_user AS receiveUser, receive_time AS receiveTime, create_user AS createUser, create_time AS createTime, update_user AS updateUser, update_time AS updateTime, finish_time AS finishTime, finish_type AS finishType
+    </sql>
+
+	<sql id="search">
+		case fault_type when 1 then COUNT(id) else 0 end AS s1,
+		case fault_type when 2 then COUNT(id) else 0 end AS s2,
+		case fault_type when 3 then COUNT(id) else 0 end AS s3,
+		case fault_type when 4 then COUNT(id) else 0 end AS s4,
+		case fault_type when 5 then COUNT(id) else 0 end AS s5,
+		case fault_type when 6 then COUNT(id) else 0 end AS s6,
+		case fault_type when 7 then COUNT(id) else 0 end AS s7,
+		case fault_type when 8 then COUNT(id) else 0 end AS s8,
+		case fault_type when 9 then COUNT(id) else 0 end AS s9
+	</sql>
+
+
+	<select id="selectWorkList" parameterType="java.util.Map" resultMap="BaseResultMap">
+		select *
+		from t_work
+		where 1=1
+		<if test="params.status!=null and params.status != ''">
+		and status = #{params.status}
+		</if>
+		<if test="params.faultType!=null and params.faultType != ''">
+			and fault_type = #{params.faultType}
+		</if>
+		<if test="params.platform!=null and params.platform != ''">
+			and platform = #{params.platform}
+		</if>
+		<if test="params.level!=null and params.level != ''">
+			and level = #{params.level}
+		</if>
+		<if test="params.priority!=null and params.priority != ''">
+			and priority = #{params.priority}
+		</if>
+		<if test="params.startTime!=null and params.startTime != ''">
+		and create_time &gt; #{params.startTime}::TIMESTAMP
+		</if>
+		<if test="params.endTime!=null and params.endTime != ''">
+		and create_time &lt; #{params.endTime}::TIMESTAMP
+		</if>
+		<if test="params.search!=null and params.search != ''">
+		and (station_name LIKE '%${params.search}%' or create_user LIKE '%${params.search}%' or alias_name LIKE '%${params.search}%')
+		</if>
+		order by id desc;
+	</select>
+	
+	<!-- 机房问题排行榜 -->
+	<select id="serverRoomCount" resultType="java.util.Map">
+		select server_room_id, sum(s1) as s1, sum(s2) as s2, sum(s3) as s3,
+		sum(s4) as s4, sum(s5) as s5, sum(s6) as s6, sum(s7) as s7,
+		sum(s8) as s8, sum(s9) as s9
+		from (
+		SELECT
+		server_room_id,
+		<include refid="search"></include>
+		FROM t_work
+
+		GROUP BY server_room_id, fault_type
+		) T
+		GROUP BY server_room_id
+		ORDER BY server_room_id ASC
+	</select>
+	
+	<!-- 网址问题排行榜 -->
+	<select id="platformCount" resultType="java.util.Map">
+		select platform, sum(s1) as s1, sum(s2) as s2, sum(s3) as s3,
+		sum(s4) as s4, sum(s5) as s5, sum(s6) as s6, sum(s7) as s7,
+		sum(s8) as s8, sum(s9) as s9
+		from (
+		SELECT
+		platform,
+		<include refid="search"></include>
+		FROM t_work
+
+		GROUP BY platform, fault_type
+		) T
+		GROUP BY platform
+		ORDER BY platform ASC
+	</select>
+
+	<!-- 平台报表查询 -->
+	<select id="platformReport" parameterType="java.util.Map" resultType="java.util.Map">
+		select platform, count(DISTINCT station_name) as stationnum, sum(taskNum) as taskNum,
+		sum(s1) as s1, sum(s2) as s2, sum(s3) as s3,
+		sum(s4) as s4, sum(s5) as s5, sum(s6) as s6,
+		sum(s7) as s7, sum(s8) as s8, sum(s9) as s9
+		from (
+		select platform, station_name, count(fault_type) as taskNum,
+		<include refid="search"></include>
+		from t_work
+		where create_time between '${params.startTime}' and '${params.endTime}'
+		and platform is not null
+		group by platform, station_name, fault_type
+		) T
+		group by platform
+	</select>
+	
+	<!-- 平台报表查询 EChart显示
+	<select id="platformReport" parameterType="java.util.Map" resultType="java.util.Map">
+		select 
+		case platform when 1 then 'BWT1' else 
+			case platform when 2 then 'BWT2' else
+				case platform when 3 then 'BWT3' else
+					case platform when 4 then 'OG' else 'ACG' end
+				end
+			end
+		end as platform,
+		
+		count(DISTINCT station_name) as "站点总数", 
+		sum(taskNum) as "问题总数",
+		sum(s1) as "ping通打不开", 
+		sum(s2) as "线路问题", 
+		sum(s3) as "机房故障",
+		sum(s4) as "被攻击", 
+		sum(s5) as "流量高", 
+		sum(s6) as "地区问题",
+		sum(s7) as "掉包", 
+		sum(s8) as "ping不通打的开",
+		sum(s9) as "其他"
+		from (
+		select platform, station_name, count(fault_type) as taskNum,
+		<include refid="search"></include>
+		from t_work
+		where create_time between '${params.startTime}' and '${params.endTime}'
+		and platform is not null
+		group by platform, station_name, fault_type
+		) T
+		group by platform
+	</select> -->
+
+	<!-- 站点问题报表 -->
+	<select id="stationReport" resultType="java.util.Map">
+		select platform, station_name, sum(taskNum) as taskNum,
+		sum(s1) as s1, sum(s2) as s2, sum(s3) as s3,
+		sum(s4) as s4, sum(s5) as s5, sum(s6) as s6,
+		sum(s7) as s7, sum(s8) as s8, sum(s9) as s9
+		from (
+		select platform, station_name, count(fault_type) as taskNum,
+		<include refid="search"></include>
+		from t_work
+		where create_time between '${params.startTime}' and '${params.endTime}'
+		and platform is not null
+		<if test="params.platform != null and params.platform != ''">
+			and platform = #{params.platform}
+		</if>
+		group by platform, station_name, fault_type
+		) T
+		group by platform, station_name;
+	</select>
+	
+	<!-- 别名问题报表 -->
+	<select id="aliasReport" resultType="java.util.Map">
+		select platform, station_name, alias_name, sum(taskNum) as taskNum,
+		sum(s1) as s1, sum(s2) as s2, sum(s3) as s3,
+		sum(s4) as s4, sum(s5) as s5, sum(s6) as s6,
+		sum(s7) as s7, sum(s8) as s8, sum(s9) as s9
+		from (
+		select platform, station_name, alias_name, count(fault_type) as taskNum,
+		<include refid="search"></include>
+		from t_work
+		where create_time between '${params.startTime}' and '${params.endTime}'
+		and alias_name is not null
+		<if test="params.platform != null and params.platform != ''">
+			and platform = #{params.platform}
+		</if>
+		<if test="params.station != null and params.station != ''">
+			and station_name = #{params.station}
+		</if>
+		<if test="params.alias != null and params.alias != ''">
+			and alias_name = #{params.alias}
+		</if>
+		group by platform, station_name, fault_type, alias_name
+		) T
+		group by platform, station_name, alias_name;
+	</select>
+</mapper>

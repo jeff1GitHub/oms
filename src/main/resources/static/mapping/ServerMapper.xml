@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.ServerMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.Server">
+		<id column="id" property="id" />
+		<result column="code" property="code" />
+		<result column="name" property="name" />
+		<result column="platform" property="platform" />
+		<result column="area" property="area" />
+		<result column="serverroom" property="serverroom" />
+		<result column="link_type" property="linkType" />
+		<result column="link_addr" property="linkAddr" />
+		<result column="link_port" property="linkPort" />
+		<result column="host" property="host" />
+		<result column="series" property="series" />
+		<result column="bandwidth" property="bandwidth" />
+		<result column="account" property="account" />
+		<result column="password" property="password" />
+		<result column="super_account" property="superAccount" />
+		<result column="super_password" property="superPassword" />
+		<result column="server_type" property="serverType" />
+		<result column="cpu" property="cpu" />
+		<result column="memory" property="memory" />
+		<result column="disk" property="disk" />
+		<result column="raid" property="raid" />
+		<result column="system" property="system" />
+		<result column="nic" property="nic" />
+		<result column="idarc_addr" property="idarcAddr" />
+		<result column="idarc_account" property="idarcAccount" />
+		<result column="idarc_password" property="idarcPassword" />
+		<result column="ownership" property="ownership" />
+		<result column="buy_time" property="buyTime" />
+		<result column="end_time" property="endTime" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_create" property="updateCreate" />
+		<result column="price" property="price" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, code, name, platform, area, serverroom, link_type AS linkType, link_addr AS linkAddr, link_port AS linkPort, host, series, bandwidth, account, password, super_account AS superAccount, super_password AS superPassword, server_type AS serverType, cpu, memory, disk, raid, system, nic, idarc_addr AS idarcAddr, idarc_account AS idarcAccount, idarc_password AS idarcPassword, ownership, buy_time AS buyTime, end_time AS endTime, create_user AS createUser, create_time AS createTime, update_user AS updateUser, update_create AS updateCreate, price
+    </sql>
+    
+    <select id="getServerListForDropDown" resultType="com.og.oms.model.Server">
+    	select id, code from t_server;
+    </select>
+    
+    <select id="getServerList" parameterType="java.util.Map" resultType="com.og.oms.model.Server">
+    	select 
+        <include refid="Base_Column_List"/>
+        from t_server 
+        where 1 = 1 
+        <if test="serverCode != null and serverCode != ''">
+		and code = #{serverCode}
+		</if>
+		<if test="linkAddr != null and linkAddr != ''">
+		and link_addr like '%${linkAddr}%'
+		</if>
+   		<if test="startDay!=null and startDay != ''">
+		and end_time &gt; #{startDay}::TIMESTAMP
+		</if>
+		<if test="endDay!=null and endDay != ''">
+		and end_time &lt; #{endDay}::TIMESTAMP
+		</if>     
+    </select>
+</mapper>

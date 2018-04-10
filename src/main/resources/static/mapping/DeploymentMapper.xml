@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.DeploymentMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.Deployment">
+		<id column="id" property="id" />
+		<result column="platform" property="platform" />
+		<result column="environment" property="environment" />
+		<result column="project" property="project" />
+		<result column="service" property="service" />
+		<result column="project_name" property="projectName" />
+		<result column="port" property="port" />
+		<result column="server" property="server" />
+		<result column="test" property="test" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user" property="createUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="deployed_ip" property="deployedIp" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, platform, environment, project, service, project_name AS projectName, port, server, test, create_time AS createTime, create_user AS createUser, update_time AS updateTime, update_user AS updateUser, deployed_ip AS deployedIp
+    </sql>
+</mapper>

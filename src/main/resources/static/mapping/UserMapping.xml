@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.og.oms.model.User">
+        <id column="id" property="id"/>
+        <result column="account" property="account"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="ip" property="ip"/>
+        <result column="is_disable" property="isDisable"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="nick" property="nick"/>
+        <result column="password" property="password"/>
+        <result column="remark" property="remark"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        account, create_time AS createTime, create_user AS createUser, id, ip, is_disable AS isDisable, last_login_time AS lastLoginTime, nick, password, remark, update_time AS updateTime, update_user AS updateUser
+    </sql>
+
+    <select id="selectUserList" parameterType="java.util.Map" resultType="com.og.oms.model.User">
+        select a.account, a.create_time AS createTime, a.create_user AS createUser, a.id,
+          a.ip, a.is_disable AS isDisable, a.last_login_time AS lastLoginTime, a.nick,
+          a.password, a.remark, a.update_time AS updateTime, a.update_user AS updateUser,
+          array_accum(DISTINCT b.group_id) groups1
+        from t_user a left join t_group_user b on a.id=b.user_id
+        where 1=1
+        <if test="params.group!=null and params.group != ''">
+          and b.group_id=${params.group}
+        </if>
+        <if test="params.status!=null ">
+          and a.is_disable=${params.status}
+        </if>
+        <if test="params.search!=null and params.search != ''">
+          and (a.account like '%${params.search}%' or a.ip like '%${params.search}%')
+        </if>
+        <if test="params.datemax!=null and params.datemax != ''">
+          and a.last_login_time &lt; '${params.datemax}'
+        </if>
+        <if test="params.datemin!=null and params.datemin != ''">
+          and a.last_login_time &gt; '${params.datemin}'
+        </if>
+        group by a.id
+    </select>
+    
+    <select id="getUserListByParam" parameterType="java.util.Map" resultType="com.og.oms.model.User">
+       	select 
+			tuu.id, tuu.account, tuu.nick, tuu."isDisable", tuu.ip, tuu."lastLoginTime", array_to_string(array_agg(tuu.name),' ') as groupInfos
+		from (select 
+				  tu.id, tu.account, tu.nick, tu.is_disable as "isDisable", tu.ip, tu.last_login_time as "lastLoginTime", tg.name
+			  from t_user as tu
+			  left join t_group_user as tgu on tu.id = tgu.user_id
+			  left join t_group as tg on tgu.group_id = tg.f_id
+    		  where 1=1
+			    <if test="_parameter.containsKey('group')">
+		        	and tgu.group_id=${group}
+		    	</if>  
+		    	<if test="_parameter.containsKey('status')">
+		        	and tu.is_disable=${status}
+		    	</if>  
+		    	<if test="_parameter.containsKey('search')">
+		        	and (tu.account like '%${search}%' or tu.ip like '%${search}%')
+		    	</if>  
+		    	<if test="_parameter.containsKey('datemax')">
+		        	and tu.last_login_time &lt; '${datemax}'
+		    	</if>  
+		    	<if test="_parameter.containsKey('datemin')">
+		        	and tu.last_login_time &gt; '${datemin}'
+		    	</if>
+    		  order by tu.id) as tuu
+				GROUP BY tuu.id, tuu.account, tuu.nick, tuu."isDisable", tuu.ip, tuu."lastLoginTime"
+    </select>
+    
+    <!-- 获取用户以及用户的所有组字符串-->
+    <select id="selectUserById" parameterType="java.lang.Integer" resultType="com.og.oms.model.User">
+         select array_accum(DISTINCT b.group_id) groupMap,
+            a.account, a.create_time AS createTime, a.create_user AS createUser,
+                a.id, a.ip, a.is_disable AS isDisable, a.last_login_time AS lastLoginTime, a.nick, a.password, a.remark,
+                a.update_time AS updateTime, a.update_user AS updateUser
+            from t_user a left join t_group_user b on a.id=b.user_id where a.id = #{id}
+            group by a.id;
+    </select>
+    
+    <!-- 获取运维组下的所有用户 -->
+    <select id="getUsersByGroups" resultType="com.og.oms.model.User">
+		select tu.id, tu.account from t_user as tu left join t_group_user as tgu
+		on tu.id = tgu.user_id where tgu.group_id = 53 or tgu.group_id = 70 or tgu.group_id = 71;
+    </select>
+</mapper>

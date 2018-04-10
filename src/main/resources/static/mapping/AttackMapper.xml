@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.og.oms.dao.AttackMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.og.oms.model.Attack">
+		<id column="id" property="id" />
+		<result column="station_code" property="stationCode" />
+		<result column="level" property="level" />
+		<result column="platform" property="platform" />
+		<result column="alias" property="alias" />
+		<result column="attack_time" property="attackTime" />
+		<result column="attack_intensity" property="attackIntensity" />
+		<result column="defense_server" property="defenseServer" />
+		<result column="director" property="director" />
+		<result column="remark" property="remark" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="defense_num" property="defenseNum" />
+		<result column="defense_ip" property="defenseIp" />
+		<result column="show" property="show" />
+		<result column="task_id" property="taskId" />
+		<result column="attack_num" property="attackNum" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, station_code AS stationCode, level, platform, alias, attack_time AS attackTime, attack_intensity AS attackIntensity, defense_server AS defenseServer, director, remark, create_user AS createUser, create_time AS createTime, update_user AS updateUser, update_time AS updateTime, defense_num AS defenseNum, defense_ip AS defenseIp, show, task_id AS taskId, attack_num AS attackNum
+    </sql>
+    
+    <select id="getAttackList" parameterType="java.util.Map" resultType="com.og.oms.model.Attack">
+    	select  
+	    	ta.id, 
+	    	tam2.attack_message_domain as recentlyAttackedDomain,
+	    	ta.station_code as stationCode, 
+	        ta.level, 
+	        ta.platform, 
+	        ta.alias, 
+	        ta.attack_time as attackTime, 
+	        ta.attack_intensity as attackIntensity, 
+	        ta.defense_server as defenseServer, 
+	        ta.director, 
+	        ta.remark, 
+	        ta.create_user as createUser, 
+	        ta.create_time as createTime, 
+	        ta.update_user as updateUser, 
+	        ta.update_time as updateTime, 
+	        ta.defense_num as defenseNum, 
+	        ta.defense_ip as defenseIp, 
+	        ta.show, 
+	        ta.task_id as taskId, 
+	        COALESCE( tam1.attackMessageNums, ta.attack_num) as attackNum
+         from 
+         	t_attack as ta 
+         left join  
+			(select tam.attack_message_id, max(tam.id) as tamid, sum(tam.attack_message_num) as attackMessageNums from t_attack_message as tam group by tam.attack_message_id) as tam1 on ta.id = tam1.attack_message_id
+		left join
+			t_attack_message tam2 on tam2.id = tam1.tamid
+		where 1=1
+        <if test="level != null and level != ''">
+		and ta.level = #{level}
+		</if>
+		<if test="platform != null and platform != ''">
+		and ta.platform = #{platform}
+		</if>
+   		<if test="startTime != null and startTime != ''">
+		and ta.attack_time &gt; #{startTime}::TIMESTAMP
+		</if>
+		<if test="endTime != null and endTime != ''">
+		and ta.attack_time &lt; #{endTime}::TIMESTAMP
+		</if>     
+		<if test="search != null and search != ''">
+		and (ta.station_code LIKE '%${search}%' or ta.alias LIKE '%${search}%' or ta.director LIKE '%${search}%')
+		</if> 
+    </select>
+
+</mapper>
